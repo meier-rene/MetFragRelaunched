@@ -41,38 +41,66 @@
 		<h:form id="fragmentsViewForm">
 			<h:panelGroup id="fragmentsViewPanel">
 				<p:chart style="height:250px; width:600px;" type="line"
-					model="#{metFragWebBean.fragmentsModelView}">
+					model="#{metFragWebBean.fragmentsModelView}" extender="fragmentsViewExtender">
 					<p:ajax event="itemSelect"
 						listener="#{metFragWebBean.fragmentsViewItemSelect}" />
-					<script type="text/javascript">
-						function fragmentsViewExtender() {
-							this.cfg.seriesDefaults = {
-								rendererOptions : {
-									lineWidth : 1
-								},
-								markerOptions : {
-									show : true,
-									style : 'dash',
-									lineWidth : 1.5,
-									size : 4,
-									shadow : true
-								},
-							},
-							this.cfg.cursor = {
-								show : true,
-								zoom : true,
-								constrainZoomTo : 'x'
-							},
-							this.cfg.highlighter = {
-								show : true,
-								showMarker : false,
-								tooltipAxes : 'xy',
-								yvalues : 2,
-								formatString : '<table style="background-color: white;" class="jqplot-highlighter"> \
-							          <tr><td>m/z:</td><td>%s</td></tr> \
-							          <tr><td>int:</td><td>%s</td></tr></table>'
-							};
-						}
+function fragmentsViewExtender() {
+// Chart.js configuration
+	his.cfg.options = this.cfg.options || {};
+\n// Configure scales
+	his.cfg.options.scales = {
+x: {
+display: true,
+	itle: {
+display: true,
+	ext: 'm/z'
+}
+},
+y: {
+display: true,
+	itle: {
+display: true,
+	ext: 'Intensity'
+},
+min: 0,
+max: 1050
+}
+};
+\n// Configure plugins
+	his.cfg.options.plugins = this.cfg.options.plugins || {};
+	his.cfg.options.plugins.legend = {
+display: false
+};
+\n	his.cfg.options.plugins.tooltip = {
+enabled: true,
+llbacks: {
+	itle: function(context) {
+eturn 'm/z: ' + context[0].parsed.x.toFixed(2);
+},
+label: function(context) {
+eturn 'Intensity: ' + context.parsed.y.toFixed(0);
+}
+}
+};
+\n// Configure zoom plugin if available
+if (typeof Chart.Zoom !== 'undefined') {
+	his.cfg.options.plugins.zoom = {
+zoom: {
+wheel: {
+enabled: true,
+},
+pinch: {
+enabled: true
+},
+mode: 'x',
+},
+pan: {
+enabled: true,
+mode: 'x',
+}
+};
+}
+}
 					</script>
 				</p:chart>
 				<br />

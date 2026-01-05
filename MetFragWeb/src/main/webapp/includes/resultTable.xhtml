@@ -216,27 +216,51 @@
 									<p:chart id="scoreChart" type="bar" extender="extender"
 										model="#{metFragResult.horizontalScoreModel}"
 										style="height:170px; width:200px; border: none; display: block; margin: 0px auto;">
-										<h:outputScript library="js"
-											name="jqplot.canvasAxisTickRenderer.min.js" />
 										<script type="text/javascript">
 											function extender() {
-												this.cfg.axes.xaxis = {
-													ticks : [
-															0.0,
-															0.2,
-															0.4,
-															0.6,
-															0.8,
-															1.0,
-															{
-																value : 1.05,
-																showLabel : false,
-																showMark : false,
-																showGridline : false
-															} ],
-													min : 0.0,
-													max : 1.0
+												// Chart.js configuration for horizontal bar chart
+												this.cfg.options.indexAxis = 'y'; // Already set in Java model but ensure it's horizontal
+												
+												// Configure scales
+												this.cfg.options.scales = {
+													x: {
+														min: 0.0,
+														max: 1.0,
+														ticks: {
+															stepSize: 0.2,
+															callback: function(value) {
+																return value.toFixed(1);
+															}
+														}
+													},
+													y: {
+														ticks: {
+															autoSkip: false,
+															font: {
+																size: 10
+															}
+														}
+													}
 												};
+												
+												// Configure legend
+												this.cfg.options.plugins = this.cfg.options.plugins || {};
+												this.cfg.options.plugins.legend = {
+													display: false
+												};
+												
+												// Configure tooltips
+												this.cfg.options.plugins.tooltip = {
+													enabled: true,
+													callbacks: {
+														label: function(context) {
+															return context.dataset.label + ': ' + context.parsed.x.toFixed(3);
+														}
+													}
+												};
+												
+												// Disable animations for better performance in tables
+												this.cfg.options.animation = false;
 											}
 										</script>
 									</p:chart>
