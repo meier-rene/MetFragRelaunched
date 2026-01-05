@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.primefaces.model.chart.LineChartModel;
+import org.primefaces.model.charts.line.LineChartModel;
 
 import de.ipbhalle.metfraglib.additionals.BondEnergies;
 import de.ipbhalle.metfraglib.additionals.MathTools;

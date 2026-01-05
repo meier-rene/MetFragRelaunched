@@ -40,9 +40,13 @@ import org.primefaces.event.organigram.OrganigramNodeSelectEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.OrganigramNode;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.chart.AxisType;
-import org.primefaces.model.chart.LineChartModel;
-import org.primefaces.model.chart.LineChartSeries;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
 
 import de.ipbhalle.metfraglib.additionals.MathTools;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
@@ -2855,58 +2859,87 @@ public class MetFragWebBean implements Serializable {
 		try {
 			if(this.processedPeaklistObject == null) throw new Exception();
 			double maxMZ = ((TandemMassPeak)this.processedPeaklistObject.getElement(this.processedPeaklistObject.getNumberElements() - 1)).getMass();
-			this.fragmentsModel.getAxis(AxisType.Y).setMin(0);
-			this.fragmentsModel.getAxis(AxisType.Y).setMax(1050);
-			this.fragmentsModel.getAxis(AxisType.Y).setLabel("Intensity");
-			this.fragmentsModel.getAxis(AxisType.Y).setTickInterval("250");
-			this.fragmentsModel.getAxis(AxisType.Y).setTickCount(5);
-			this.fragmentsModel.getAxis(AxisType.X).setMin(0.0);
-			this.fragmentsModel.getAxis(AxisType.X).setLabel("m/z");
-			this.fragmentsModel.getAxis(AxisType.X).setTickFormat("%.2f");
-			this.fragmentsModel.getAxis(AxisType.X).setTickAngle(-30);
-			this.fragmentsModel.setZoom(true);
-			this.fragmentsModel.setMouseoverHighlight(true);
-			this.fragmentsModel.setShowDatatip(false);
-			this.fragmentsModel.setShowPointLabels(false);
-			this.fragmentsModel.setExtender("fragmentsViewExtender");
+			
+			ChartData data = new ChartData();
+			
 			String xTickInterval = "100.000";
 			if(maxMZ <= 400) xTickInterval = "50.000";
 			if(maxMZ <= 150) xTickInterval = "10.000"; 
-			this.fragmentsModel.getAxis(AxisType.X).setTickInterval(xTickInterval);
-			String seriesColors = "";
+			
 			java.util.Vector<Integer> explainedPeakIDs = new java.util.Vector<Integer>();
 			for(int i = 0; i < molecule.getMatchList().getNumberElements(); i++)
 				explainedPeakIDs.add(molecule.getMatchList().getElement(i).getMatchedPeak().getID());
-			java.util.Vector<LineChartSeries> nonMatchPeaks = new java.util.Vector<LineChartSeries>();
-			java.util.Vector<LineChartSeries> nonUsedPeaks = new java.util.Vector<LineChartSeries>();
-			for(int i = 0; i < this.processedPeaklistObject.getNumberElements(); i++) 
-			{
+			
+			java.util.Vector<LineChartDataSet> matchPeaksDataSets = new java.util.Vector<LineChartDataSet>();
+			java.util.Vector<LineChartDataSet> nonMatchPeaksDataSets = new java.util.Vector<LineChartDataSet>();
+			java.util.Vector<LineChartDataSet> nonUsedPeaksDataSets = new java.util.Vector<LineChartDataSet>();
+			
+			for(int i = 0; i < this.processedPeaklistObject.getNumberElements(); i++) {
 				TandemMassPeak peak = (TandemMassPeak)this.processedPeaklistObject.getElement(i);
-				LineChartSeries newSeries = new LineChartSeries();
-				newSeries.set(peak.getMass() + 0.0000001, -10000000.0);
-				newSeries.set(peak.getMass(), peak.getRelativeIntensity());
+				LineChartDataSet dataSet = new LineChartDataSet();
+				dataSet.setLabel("");
+				dataSet.setShowLine(true);
+				dataSet.setPointRadius(0);
+				dataSet.setBorderWidth(2);
+				
+				List<Object> dataValues = new java.util.ArrayList<>();
+				dataValues.add(java.util.Map.of("x", peak.getMass() + 0.0000001, "y", -10000000.0));
+				dataValues.add(java.util.Map.of("x", peak.getMass(), "y", peak.getRelativeIntensity()));
+				dataSet.setData(dataValues);
+				
 				int mode = this.beanSettingsContainer.getMode() == 1000 || this.beanSettingsContainer.getMode() == -1000 ? 0 : this.beanSettingsContainer.getMode();
 				int modeIndex = Constants.ADDUCT_NOMINAL_MASSES.indexOf(mode);
 				if(explainedPeakIDs.contains(peak.getID())) {
 					this.numberMatchPeaksOfSelectedMolecule++;
-					seriesColors += "66cc66,"; 
-					this.fragmentsModel.addSeries(newSeries);
+					dataSet.setBorderColor("rgb(102, 204, 102)"); // 66cc66
+					dataSet.setBackgroundColor("rgba(102, 204, 102, 0.2)");
+					matchPeaksDataSets.add(dataSet);
 				}
-				else if(peak.getMass() > Double.parseDouble(this.beanSettingsContainer.getNeutralMonoisotopicMass()) - 5.0 + Constants.ADDUCT_MASSES.get(modeIndex)) 
-					nonUsedPeaks.add(newSeries);
-				else
-					nonMatchPeaks.add(newSeries);
+				else if(peak.getMass() > Double.parseDouble(this.beanSettingsContainer.getNeutralMonoisotopicMass()) - 5.0 + Constants.ADDUCT_MASSES.get(modeIndex)) {
+					dataSet.setBorderColor("rgb(128, 128, 128)"); // 808080
+					dataSet.setBackgroundColor("rgba(128, 128, 128, 0.2)");
+					nonUsedPeaksDataSets.add(dataSet);
+				}
+				else {
+					dataSet.setBorderColor("rgb(0, 116, 159)"); // 00749f
+					dataSet.setBackgroundColor("rgba(0, 116, 159, 0.2)");
+					nonMatchPeaksDataSets.add(dataSet);
+				}
 			}
-			for(int i = 0; i < nonMatchPeaks.size(); i++) {
-				seriesColors += "00749f,";
-				this.fragmentsModel.addSeries(nonMatchPeaks.get(i));
-			}
-			for(int i = 0; i < nonUsedPeaks.size(); i++) {
-				seriesColors += "808080,";
-				this.fragmentsModel.addSeries(nonUsedPeaks.get(i));
-			}
-			seriesColors = seriesColors.substring(0, seriesColors.length() - 1);
-			this.fragmentsModel.setSeriesColors(seriesColors);
+			
+			// Add datasets in order: match, non-match, non-used
+			for(LineChartDataSet ds : matchPeaksDataSets) data.addChartDataSet(ds);
+			for(LineChartDataSet ds : nonMatchPeaksDataSets) data.addChartDataSet(ds);
+			for(LineChartDataSet ds : nonUsedPeaksDataSets) data.addChartDataSet(ds);
+			
+			this.fragmentsModel.setData(data);
+			
+			// Configure options
+			LineChartOptions options = new LineChartOptions();
+			options.setMaintainAspectRatio(false);
+			
+			CartesianScales cScales = new CartesianScales();
+			
+			CartesianLinearAxes xAxis = new CartesianLinearAxes();
+			CartesianLinearTicks xTicks = new CartesianLinearTicks();
+			// Note: Min/stepSize configuration will be handled via extender function
+			xAxis.setTicks(xTicks);
+			cScales.addXAxesData(xAxis);
+			
+			CartesianLinearAxes yAxis = new CartesianLinearAxes();
+			CartesianLinearTicks yTicks = new CartesianLinearTicks();
+			// Note: Min/Max/stepSize configuration will be handled via extender function
+			yAxis.setTicks(yTicks);
+			cScales.addYAxesData(yAxis);
+			
+			options.setScales(cScales);
+			
+			org.primefaces.model.charts.optionconfig.legend.Legend legend = new org.primefaces.model.charts.optionconfig.legend.Legend();
+			legend.setDisplay(false);
+			options.setLegend(legend);
+			
+			this.fragmentsModel.setOptions(options);
+			this.fragmentsModel.setExtender("fragmentsViewExtender");
 		}
 		catch(Exception e) {
 			e.printStackTrace();

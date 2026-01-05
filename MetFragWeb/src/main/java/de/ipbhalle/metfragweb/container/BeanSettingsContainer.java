@@ -23,9 +23,13 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.servlet.ServletContext;
 import org.apache.logging.log4j.Level;
-import org.primefaces.model.chart.AxisType;
-import org.primefaces.model.chart.LineChartModel;
-import org.primefaces.model.chart.LineChartSeries;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -1526,33 +1530,56 @@ public class BeanSettingsContainer {
 			if(string.length() == 0) throw new Exception();
 			this.peaklistObject = this.generatePeakListObject();
 			double maxMZ = ((TandemMassPeak)this.peaklistObject.getElement(this.peaklistObject.getNumberElements() - 1)).getMass();
-			this.spectrumModel.getAxis(AxisType.Y).setMin(0);
-			this.spectrumModel.getAxis(AxisType.Y).setMax(1050);
-			this.spectrumModel.getAxis(AxisType.Y).setLabel("Intensity");
-			this.spectrumModel.getAxis(AxisType.Y).setTickInterval("250");
-			this.spectrumModel.getAxis(AxisType.Y).setTickCount(5);
-			this.spectrumModel.getAxis(AxisType.X).setMin(0.0);
-			this.spectrumModel.getAxis(AxisType.X).setTickAngle(-30);
-			this.spectrumModel.getAxis(AxisType.X).setLabel("m/z");
-			this.spectrumModel.getAxis(AxisType.X).setTickFormat("%.2f");
-			this.spectrumModel.setZoom(true);
-			this.spectrumModel.setMouseoverHighlight(true);
-			this.spectrumModel.setShowDatatip(false);
-			this.spectrumModel.setShowPointLabels(false);
-			this.spectrumModel.setExtender("spectrumViewExtender");
-			String xTickInterval = "100.000";
-			if(maxMZ <= 400) xTickInterval = "50.000";
-			if(maxMZ <= 150) xTickInterval = "10.000"; 
-			this.spectrumModel.getAxis(AxisType.X).setTickInterval(xTickInterval);
-			for(int i = 0; i < this.peaklistObject.getNumberElements(); i++) 
-			{
+			
+			ChartData data = new ChartData();
+			
+			// Create datasets for each peak (vertical lines from 0 to intensity)
+			for(int i = 0; i < this.peaklistObject.getNumberElements(); i++) {
 				TandemMassPeak peak = (TandemMassPeak)this.peaklistObject.getElement(i);
-				LineChartSeries newSeries = new LineChartSeries();
-				newSeries.set(peak.getMass() + 0.0000001, -10000000.0);
-				newSeries.set(peak.getMass(), peak.getRelativeIntensity());
-				this.spectrumModel.addSeries(newSeries);
+				LineChartDataSet dataSet = new LineChartDataSet();
+				dataSet.setLabel("");
+				dataSet.setBorderColor("rgb(0, 116, 159)");
+				dataSet.setBackgroundColor("rgba(0, 116, 159, 0.2)");
+				dataSet.setShowLine(true);
+				dataSet.setPointRadius(0);
+				dataSet.setBorderWidth(2);
+				
+				List<Object> dataValues = new java.util.ArrayList<>();
+				dataValues.add(java.util.Map.of("x", peak.getMass() + 0.0000001, "y", -10000000.0));
+				dataValues.add(java.util.Map.of("x", peak.getMass(), "y", peak.getRelativeIntensity()));
+				dataSet.setData(dataValues);
+				
+				data.addChartDataSet(dataSet);
 			}
-			this.spectrumModel.setSeriesColors("00749f");
+			
+			this.spectrumModel.setData(data);
+			
+			// Configure options
+			LineChartOptions options = new LineChartOptions();
+			options.setMaintainAspectRatio(false);
+			
+			CartesianScales cScales = new CartesianScales();
+			
+			CartesianLinearAxes xAxis = new CartesianLinearAxes();
+			CartesianLinearTicks xTicks = new CartesianLinearTicks();
+			// Note: Min/stepSize configuration will be handled via extender function
+			xAxis.setTicks(xTicks);
+			cScales.addXAxesData(xAxis);
+			
+			CartesianLinearAxes yAxis = new CartesianLinearAxes();
+			CartesianLinearTicks yTicks = new CartesianLinearTicks();
+			// Note: Min/Max/stepSize configuration will be handled via extender function
+			yAxis.setTicks(yTicks);
+			cScales.addYAxesData(yAxis);
+			
+			options.setScales(cScales);
+			
+			org.primefaces.model.charts.optionconfig.legend.Legend legend = new org.primefaces.model.charts.optionconfig.legend.Legend();
+			legend.setDisplay(false);
+			options.setLegend(legend);
+			
+			this.spectrumModel.setOptions(options);
+			this.spectrumModel.setExtender("spectrumViewExtender");
 		}
 		catch(Exception e) {
 			this.spectrumModel = new LineChartModel();
