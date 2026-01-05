@@ -73,7 +73,8 @@ public class CandidateStatistics {
 		for(int i = 0; i < results.size(); i++) {
 			labels.add(String.valueOf(i + 1));
 			mainData.add(results.get(i).getScore());
-			this.scoreDistributionModelPointLabels += (i == 0 ? "" : ",'" + results.get(i).getOriginalIdentifier() + "'");
+			if(i > 0) this.scoreDistributionModelPointLabels += ",";
+			this.scoreDistributionModelPointLabels += "'" + results.get(i).getOriginalIdentifier() + "'";
 			for(int k = 0; k < this.showScoreGraphs.length; k++) {
 				scoreData.get(k).add(results.get(i).getRoot().getSingleScore(this.showScoreGraphs[k]));
 			}
