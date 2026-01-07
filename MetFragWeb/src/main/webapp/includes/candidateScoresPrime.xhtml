@@ -10,7 +10,8 @@
 		xmlns:h="http://xmlns.jcp.org/jsf/html"
 		xmlns:f="http://xmlns.jcp.org/jsf/core"
 		xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-		xmlns:p="http://primefaces.org/ui">
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 		<h:panelGroup id="scoreSettingsPanel"
 			rendered="#{metFragWebBean.numberCompoundsRetrieved > 0}">
 			<h:outputText value="MetFrag Scoring Terms"
@@ -43,10 +44,10 @@
 						<h:panelGrid columns="2">
 							<h:outputText value="Additional Substructures:" />
 							<p:inputText id="includedScoreSmarts" required="false"
-								value="#{metFragWebBean.additionalSmartsScoreInclusion}">
+								value="#{metFragWebBean.additionalSmartsScoreInclusion}"
+								pt:placeholder="as SMARTS e.g. c1ccccc1">
 								<p:ajax event="blur" update="smartsInclusionScorePanel" />
 							</p:inputText>
-							<p:watermark for="includedScoreSmarts" value="as SMARTS e.g. c1ccccc1" id="includedScoreSmartsWatermark" />
 						</h:panelGrid>
 						<h:panelGroup style="max-width: -moz-fit-content; padding-top: 5px; padding-bottom: 10px" id="includedScoreSmartsError" layout="block"
 							styleClass="ui-messages ui-widget"
@@ -98,10 +99,10 @@
 						<h:panelGrid columns="2">
 							<h:outputText value="Additional Substructures:" />
 							<p:inputText id="excludedScoreSmarts" required="false"
-								value="#{metFragWebBean.additionalSmartsScoreExclusion}">
+								value="#{metFragWebBean.additionalSmartsScoreExclusion}"
+								pt:placeholder="as SMARTS e.g. c1ccccc1">
 								<p:ajax event="blur" update="smartsExclusionScorePanel" />
 							</p:inputText>
-							<p:watermark for="excludedScoreSmarts" value="as SMARTS e.g. c1ccccc1" id="excludedScoreSmartsWatermark" />
 						</h:panelGrid>
 						<h:panelGroup style="max-width: -moz-fit-content; padding-top: 5px; padding-bottom: 10px" id="excludedScoreSmartsError" layout="block"
 							styleClass="ui-messages ui-widget"

@@ -9,7 +9,8 @@
 	<ui:composition xmlns="http://www.w3.org/1999/xhtml"
 		xmlns:h="http://xmlns.jcp.org/jsf/html"
 		xmlns:f="http://xmlns.jcp.org/jsf/core"
-		xmlns:p="http://primefaces.org/ui">
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
 		<h:panelGroup id="filterSettingsPanel"
 			rendered="#{metFragWebBean.numberCompoundsRetrieved > 0}">
@@ -131,10 +132,10 @@
 						<h:panelGrid columns="2">
 							<h:outputText value="Additional Substructures:" />
 							<p:inputText id="includedFilterSmarts" required="false"
-								value="#{metFragWebBean.additionalSmartsFilterInclusion}">
+								value="#{metFragWebBean.additionalSmartsFilterInclusion}"
+								pt:placeholder="as SMARTS e.g. c1ccccc1">
 								<p:ajax event="blur" update="smartsInclusionFilterPanel" />
 							</p:inputText>
-							<p:watermark for="includedFilterSmarts" value="as SMARTS e.g. c1ccccc1" id="includedFilterSmartsWatermark" />
 						</h:panelGrid>
 						<h:panelGroup style="max-width: -moz-fit-content; padding-top: 5px; padding-bottom: 10px" id="includedFilterSmartsError" layout="block"
 							styleClass="ui-messages ui-widget"
@@ -186,10 +187,10 @@
 						<h:panelGrid columns="2">
 							<h:outputText value="Additional Substructures:" />
 							<p:inputText id="excludedFilterSmarts" required="false"
-								value="#{metFragWebBean.additionalSmartsFilterExclusion}">
+								value="#{metFragWebBean.additionalSmartsFilterExclusion}"
+								pt:placeholder="as SMARTS e.g. c1ccccc1">
 								<p:ajax event="blur" update="smartsExclusionFilterPanel" />
 							</p:inputText>
-							<p:watermark for="excludedFilterSmarts" value="as SMARTS e.g. c1ccccc1" id="excludedFilterSmartsWatermark" />
 						</h:panelGrid>
 						<h:panelGroup style="max-width: -moz-fit-content; padding-top: 5px; padding-bottom: 10px" id="excludedFilterSmartsError" layout="block"
 							styleClass="ui-messages ui-widget"
