@@ -20,7 +20,32 @@ Updated PrimeFaces version from 12.0.0 to 14.0.0:
 </dependency>
 ```
 
-### 2. Java Model Classes
+### 2. Watermark Component Migration
+
+The `<p:watermark>` component was deprecated in PrimeFaces 13 and removed in PrimeFaces 14. It has been replaced with HTML5 `placeholder` attribute via JSF passthrough.
+
+**Old (PrimeFaces 12):**
+```xml
+<p:inputText id="myInput" value="#{bean.value}" />
+<p:watermark for="myInput" value="Enter text here" id="myWatermark" />
+```
+
+**New (PrimeFaces 14):**
+```xml
+<p:inputText id="myInput" value="#{bean.value}" pt:placeholder="Enter text here" />
+```
+
+**Required namespace:**
+```xml
+xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+```
+
+**Migrated files:**
+- `comparespectraD3JSInclude.xhtml` - 2 SMILES input fields
+- `candidateScoresPrime.xhtml` - 2 SMARTS input fields
+- `candidateFiltersPrime.xhtml` - 2 SMARTS input fields
+
+### 3. Java Model Classes
 
 #### CandidateStatistics.java
 - **Old:** Used `org.primefaces.model.chart.LineChartModel` and `LineChartSeries` (jqPlot)
@@ -53,7 +78,7 @@ Updated PrimeFaces version from 12.0.0 to 14.0.0:
   - Peak colors (matched/non-matched/unused) now set via `borderColor` and `backgroundColor`
   - Removed jqPlot-specific methods like `setSeriesColors()`
 
-### 3. XHTML View Files
+### 4. XHTML View Files
 
 #### statistics.xhtml
 - **Changes:**
