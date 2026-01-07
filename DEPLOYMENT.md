@@ -2,12 +2,14 @@
 
 ## Overview
 
-MetFragWeb is a Jakarta EE 10 web application that can be deployed to various servlet containers and application servers. This guide covers deployment to Apache Tomcat 10.1+.
+MetFragWeb is a Jakarta EE 10 web application that can be deployed to various servlet containers and application servers, including Apache TomEE and Apache Tomcat.
 
 ## Prerequisites
 
 - **Java**: JDK 21 or higher
-- **Application Server**: Apache Tomcat 10.1+ (with Jakarta EE 10 support)
+- **Application Server**: 
+  - Apache TomEE 8.x+ (Jakarta EE 10 - **Recommended**)
+  - Apache Tomcat 10.1+ (requires additional setup)
 - **Memory**: Recommended minimum 2GB heap size
 
 ## Building the WAR File
@@ -23,18 +25,20 @@ mvn clean package -pl MetFragWeb -am
 # MetFragWeb/target/MetFragWeb.war
 ```
 
-## Deployment to Apache Tomcat
+## Deployment to Apache TomEE (Recommended)
 
-### Option 1: Manual Deployment
+TomEE is a full Jakarta EE application server with all necessary components built-in.
 
-1. Copy the WAR file to Tomcat's webapps directory:
+### Manual Deployment
+
+1. Copy the WAR file to TomEE's webapps directory:
    ```bash
-   cp MetFragWeb/target/MetFragWeb.war /path/to/tomcat/webapps/
+   cp MetFragWeb/target/MetFragWeb.war /path/to/tomee/webapps/
    ```
 
-2. Start Tomcat:
+2. Start TomEE:
    ```bash
-   /path/to/tomcat/bin/catalina.sh run
+   /path/to/tomee/bin/catalina.sh run
    ```
 
 3. Access the application at:
@@ -42,12 +46,41 @@ mvn clean package -pl MetFragWeb -am
    http://localhost:8080/MetFragWeb/
    ```
 
-### Option 2: Docker Deployment
+## Deployment to Apache Tomcat
 
-A Dockerfile is provided for containerized deployment:
+Tomcat is a servlet container and requires additional Jakarta EE runtime libraries.
+
+### Prerequisites for Tomcat
+
+The following Jakarta EE implementations must be added to Tomcat's classpath or bundled in the WAR:
+
+- **Jakarta Faces 4.0.7** (Mojarra) - JSF implementation
+- **Weld 5.1.3** - CDI (Contexts and Dependency Injection)
+- **Hibernate Validator 8.0.1** - Bean Validation
+- **Expressly 5.0.0** - Expression Language
+
+These dependencies are declared with `<scope>provided</scope>` in the POM, so they are NOT included in the WAR by default (for TomEE compatibility). To deploy to Tomcat, you have two options:
+
+#### Option 1: Modify POM for Tomcat (Not Recommended)
+
+Remove the `<scope>provided</scope>` from the Jakarta EE dependencies in `MetFragWeb/pom.xml`, then rebuild.
+
+#### Option 2: Use TomEE Instead
+
+We recommend using TomEE instead of Tomcat as it provides all Jakarta EE components out of the box.
+
+### Docker Deployment for Tomcat
+
+If you still need to use Tomcat, you can create a custom Docker image with the required libraries:
 
 ```dockerfile
 FROM tomcat:10.1-jdk21
+
+# Add required Jakarta EE libraries
+ADD https://repo1.maven.org/maven2/org/glassfish/jakarta.faces/4.0.7/jakarta.faces-4.0.7.jar /usr/local/tomcat/lib/
+ADD https://repo1.maven.org/maven2/org/jboss/weld/servlet/weld-servlet-shaded/5.1.3.Final/weld-servlet-shaded-5.1.3.Final.jar /usr/local/tomcat/lib/
+ADD https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar /usr/local/tomcat/lib/
+ADD https://repo1.maven.org/maven2/org/glassfish/expressly/expressly/5.0.0/expressly-5.0.0.jar /usr/local/tomcat/lib/
 
 # Copy the WAR file
 COPY MetFragWeb.war /usr/local/tomcat/webapps/
@@ -58,23 +91,16 @@ EXPOSE 8080
 CMD ["catalina.sh", "run"]
 ```
 
-Build and run:
-```bash
-docker build -t metfragweb .
-docker run -d -p 8080:8080 metfragweb
-```
-
 ## Runtime Dependencies
 
-The WAR file includes all necessary Jakarta EE runtime dependencies:
+The WAR file includes application-specific dependencies:
 
-- **Jakarta Faces 4.0.7** (Mojarra) - JSF implementation
-- **Weld 5.1.3** - CDI (Contexts and Dependency Injection)
-- **Hibernate Validator 8.0.1** - Bean Validation
-- **Expressly 5.0.0** - Expression Language
 - **PrimeFaces 14.0.0** - UI component library
+- **OmniFaces 4.6.5** - JSF utility library
+- **MetFragLib** - Core MetFrag functionality
+- **CDK 2.11** - Chemistry Development Kit
 
-These dependencies are bundled in the WAR file and do not require external configuration.
+Jakarta EE platform APIs (Faces, CDI, Validation, EL) are provided by the application server (TomEE) and NOT bundled in the WAR.
 
 ## Configuration
 

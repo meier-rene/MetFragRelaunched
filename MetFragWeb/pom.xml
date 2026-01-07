@@ -69,28 +69,32 @@
 			<groupId>jakarta.platform</groupId>
 			<artifactId>jakarta.jakartaee-api</artifactId>
 		</dependency>
-		<!-- Jakarta Faces implementation for Tomcat deployment -->
+		<!-- Jakarta Faces implementation - provided by TomEE, needed for Tomcat -->
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>jakarta.faces</artifactId>
 			<version>4.0.7</version>
+			<scope>provided</scope>
 		</dependency>
-		<!-- CDI implementation for Tomcat -->
+		<!-- CDI implementation - provided by TomEE, needed for Tomcat -->
 		<dependency>
 			<groupId>org.jboss.weld.servlet</groupId>
 			<artifactId>weld-servlet-shaded</artifactId>
 			<version>5.1.3.Final</version>
+			<scope>provided</scope>
 		</dependency>
-		<!-- Jakarta Bean Validation for Tomcat -->
+		<!-- Jakarta Bean Validation - provided by TomEE, needed for Tomcat -->
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>8.0.1.Final</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.expressly</groupId>
 			<artifactId>expressly</artifactId>
 			<version>5.0.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
