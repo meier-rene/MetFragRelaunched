@@ -73,7 +73,7 @@
 									callbacks: {
 										title: function(context) {
 											var index = context[0].dataIndex;
-											if (pointLabels && index < pointLabels.length) {
+											if (pointLabels &amp;&amp; index &lt; pointLabels.length) {
 												return pointLabels[index];
 											}
 											return 'Candidate ' + (index + 1);
