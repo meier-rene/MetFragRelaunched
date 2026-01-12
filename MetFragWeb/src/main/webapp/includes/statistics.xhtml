@@ -29,52 +29,76 @@
 							listener="#{metFragWebBean.candidatesViewItemSelect}" />
 						<script type="text/javascript">
 							function extenderScore() {
-								this.cfg.cursor = {
-									show: true,
-									zoom:true,
-							    	constrainZoomTo: 'x',
-							    	showTooltip: false,
-							    	looseZoom: true
-								},
-								this.cfg.axes.xaxis = {
-									min : 0.0,
-									label: "Candidate Index",
-									tickOptions: {
-							        	formatString: '%d'
-							        }
-								},
-								this.cfg.legend = {
-									location: 'ne',
-									show: true,
-									background: '#ffffff',
-									labels: #{metFragWebBean.scoreDistributionModelLegendLabels}
-								},
-								this.cfg.seriesDefaults = {
-									lineWidth: 2, 
-									shadow: false,
-									rendererOptions: { 
-										smooth: false 
-									},
-									markerOptions: { 
-										show: false, 
-										shadow: false, 
-										size: 7 
-									}
-							    },
-							    this.cfg.series = [
-									{
-										markerOptions: { 
-											show: true, 
-											shadow: false, 
-											size: 7 
+								// Chart.js configuration
+								var pointLabels = #{metFragWebBean.scoreDistributionModelPointLabels};
+								var showLabels = #{metFragWebBean.showScoreDistributionPointLabels};
+								
+								// Configure scales
+								this.cfg.options.scales = {
+									x: {
+										display: true,
+										title: {
+											display: true,
+											text: 'Candidate Index'
 										},
-										showLine: false,
-										pointLabels : { 
-											show: #{metFragWebBean.showScoreDistributionPointLabels},
-						            		labels: #{metFragWebBean.scoreDistributionModelPointLabels}
+										ticks: {
+											callback: function(value, index, values) {
+												return Math.floor(value);
+											}
+										}
+									},
+									y: {
+										display: true,
+										title: {
+											display: true,
+											text: 'Score'
+										},
+										beginAtZero: true
+									}
+								};
+								
+								// Configure legend
+								this.cfg.options.plugins = this.cfg.options.plugins || {};
+								this.cfg.options.plugins.legend = {
+									display: true,
+									position: 'top',
+									labels: {
+										usePointStyle: true
+									}
+								};
+								
+								// Configure tooltips to show point labels
+								this.cfg.options.plugins.tooltip = {
+									enabled: true,
+									callbacks: {
+										title: function(context) {
+											var index = context[0].dataIndex;
+											if (pointLabels &amp;&amp; index &lt; pointLabels.length) {
+												return pointLabels[index];
+											}
+											return 'Candidate ' + (index + 1);
 										}
 									}
-								];
+								};
+								
+								// Configure zoom plugin if available
+								if (typeof Chart.Zoom !== 'undefined') {
+									this.cfg.options.plugins.zoom = {
+										zoom: {
+											wheel: {
+												enabled: true,
+											},
+											pinch: {
+												enabled: true
+											},
+											mode: 'x',
+										},
+										pan: {
+											enabled: true,
+											mode: 'x',
+										}
+									};
+								}
 							}
 						</script>
 					</p:chart>

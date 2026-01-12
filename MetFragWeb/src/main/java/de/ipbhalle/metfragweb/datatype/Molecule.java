@@ -3,9 +3,14 @@ package de.ipbhalle.metfragweb.datatype;
 import java.io.Serializable;
 import java.util.List;
 
-import org.primefaces.model.chart.AxisType;
-import org.primefaces.model.chart.ChartSeries;
-import org.primefaces.model.chart.HorizontalBarChartModel;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.bar.BarChartDataSet;
+import org.primefaces.model.charts.bar.BarChartModel;
+import org.primefaces.model.charts.bar.BarChartOptions;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
+import org.primefaces.model.charts.optionconfig.legend.Legend;
 
 import de.ipbhalle.metfraglib.additionals.MathTools;
 import de.ipbhalle.metfraglib.candidate.PrecursorCandidate;
@@ -41,7 +46,7 @@ public class Molecule implements Serializable {
 	protected int[] additionalValues;
 	protected MatchList matchList;
 	
-	protected HorizontalBarChartModel horizontalBarModel;
+	protected BarChartModel horizontalBarModel;
 	protected Object database;
 	protected Integer simScoreIndex;
 	
@@ -67,14 +72,22 @@ public class Molecule implements Serializable {
 		this.smiles = smiles;
 		this.imageAddress = imageAddress;
 		
-		this.horizontalBarModel = new HorizontalBarChartModel();
-		ChartSeries scoreCharts = new ChartSeries();
-		scoreCharts.setLabel("Scores");
+		this.horizontalBarModel = new BarChartModel();
+		ChartData chartData = new ChartData();
+		
+		BarChartDataSet dataSet = new BarChartDataSet();
+		dataSet.setLabel("Scores");
+		dataSet.setBackgroundColor("rgba(75, 192, 192, 0.6)");
+		dataSet.setBorderColor("rgb(75, 192, 192)");
+		dataSet.setBorderWidth(1);
 		
 		int scoreNotForGraphNumber = 0;
 		int numberNotForScore = 0;
 		for(int i = this.scoresSummaries.length - 1; i >= 0; i--)
 			if(!this.scoresSummaries[i].isUsedForScoring()) numberNotForScore++;
+		
+		List<Object> values = new java.util.ArrayList<>();
+		List<Object> labels = new java.util.ArrayList<>();
     	for(int i = this.scoresSummaries.length - 1; i >= 0; i--) {
     		if(!this.scoresSummaries[i].isUsedForScoring()) {
     			scoreNotForGraphNumber++;
@@ -85,21 +98,36 @@ public class Molecule implements Serializable {
     		if(scoreIndex == 1) end = "st";
     		if(scoreIndex == 2) end = "nd";
     		if(scoreIndex == 3) end = "rd";
-    		scoreCharts.set(scoreIndex + end, scoresSummaries[i].getValue());
+    		labels.add(scoreIndex + end);
+    		values.add(scoresSummaries[i].getValue());
         }
-    	this.horizontalBarModel.addSeries(scoreCharts);
-    	this.horizontalBarModel.setStacked(false);
-    	this.horizontalBarModel.setShowPointLabels(true);
-    	this.horizontalBarModel.setMouseoverHighlight(true);
-    	this.horizontalBarModel.setShowDatatip(false);
-
+    	
+    	dataSet.setData(values);
+    	chartData.addChartDataSet(dataSet);
+    	chartData.setLabels(labels);
+    	this.horizontalBarModel.setData(chartData);
+    	
+    	// Configure options for horizontal bar chart
+    	BarChartOptions options = new BarChartOptions();
+    	options.setIndexAxis("y"); // Makes the bar chart horizontal
+    	
+    	org.primefaces.model.charts.optionconfig.legend.Legend legend = new org.primefaces.model.charts.optionconfig.legend.Legend();
+    	legend.setDisplay(false);
+    	options.setLegend(legend);
+    	
+    	CartesianScales cScales = new CartesianScales();
+    	CartesianLinearAxes xAxis = new CartesianLinearAxes();
+    	CartesianLinearTicks xTicks = new CartesianLinearTicks();
+    	// Note: Min/Max configuration will be handled via extender function for compatibility
+    	xAxis.setTicks(xTicks);
+    	cScales.addXAxesData(xAxis);
+    	options.setScales(cScales);
+    	
+    	this.horizontalBarModel.setOptions(options);
     	this.horizontalBarModel.setExtender("extender");
-    	if(this.scoresSummaries.length <= 3) this.horizontalBarModel.setBarWidth(30);
+    	// Note: Bar width adjustment for few scores can be handled via Chart.js extender function
     	
-    	
-    	this.horizontalBarModel.getAxis(AxisType.Y).setTickAngle(-45);
-    	
-	}
+    }
 	
 	public void recalculateScore(List<Weight> weights) {
 		this.finalScore = 0.0;
@@ -119,7 +147,7 @@ public class Molecule implements Serializable {
 		return this.scoresSummaries;
 	}
 	
-    public HorizontalBarChartModel getHorizontalScoreModel() {
+    public BarChartModel getHorizontalScoreModel() {
         return this.horizontalBarModel;
     }
 	

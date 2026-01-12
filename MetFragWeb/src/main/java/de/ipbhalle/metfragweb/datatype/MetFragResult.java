@@ -1,6 +1,6 @@
 package de.ipbhalle.metfragweb.datatype;
 
-import org.primefaces.model.chart.HorizontalBarChartModel;
+import org.primefaces.model.charts.bar.BarChartModel;
 
 import de.ipbhalle.metfraglib.additionals.MathTools;
 import de.ipbhalle.metfraglib.list.MatchList;
@@ -218,7 +218,7 @@ public class MetFragResult implements Serializable {
 		this.inchikey1 = inchikey1;
 	}
 
-	public HorizontalBarChartModel getHorizontalScoreModel() {
+	public BarChartModel getHorizontalScoreModel() {
 		return this.root.getHorizontalScoreModel();
 	}
 	

@@ -4,9 +4,13 @@ import java.util.List;
 
 import jakarta.faces.model.SelectItem;
 
-import org.primefaces.model.chart.AxisType;
-import org.primefaces.model.chart.LineChartModel;
-import org.primefaces.model.chart.LineChartSeries;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
 
 public class CandidateStatistics {
 	
@@ -32,35 +36,83 @@ public class CandidateStatistics {
 			return;
 		}
 		this.scoreDistributionModel = new LineChartModel();
-		this.scoreDistributionModel.getAxis(AxisType.X).setLabel("Candidate Index");
-		this.scoreDistributionModel.getAxis(AxisType.Y).setLabel("Score");
-		this.scoreDistributionModel.setExtender("extenderScore");
-		LineChartSeries series1 = new LineChartSeries();
-		series1.setLabel("Final Score");
+		ChartData data = new ChartData();
+		
+		// Create datasets
+		LineChartDataSet mainDataSet = new LineChartDataSet();
+		mainDataSet.setLabel("Final Score");
+		mainDataSet.setBorderColor("rgb(75, 192, 192)");
+		mainDataSet.setBackgroundColor("rgba(75, 192, 192, 0.2)");
+		mainDataSet.setShowLine(false);
+		mainDataSet.setPointRadius(7);
+		
 		this.legendLabels = "['Final Score'";
-		LineChartSeries[] scores = new LineChartSeries[this.showScoreGraphs.length];
+		
+		LineChartDataSet[] scoreDataSets = new LineChartDataSet[this.showScoreGraphs.length];
+		String[] colors = {"rgb(255, 99, 132)", "rgb(54, 162, 235)", "rgb(255, 206, 86)", "rgb(75, 192, 192)", "rgb(153, 102, 255)"};
 		for(int k = 0; k < this.showScoreGraphs.length; k++) {
-			scores[k] = new LineChartSeries();
-			scores[k].setShowMarker(false);
-			scores[k].setLabel(this.scoreGraphNames[k]);
+			scoreDataSets[k] = new LineChartDataSet();
+			scoreDataSets[k].setLabel(this.scoreGraphNames[k]);
+			String color = colors[k % colors.length];
+			scoreDataSets[k].setBorderColor(color);
+			scoreDataSets[k].setBackgroundColor(color.replace("rgb", "rgba").replace(")", ", 0.2)"));
+			scoreDataSets[k].setPointRadius(0);
 			this.legendLabels += ",'" + this.scoreGraphNames[k] + "'";
 		}
-		this.scoreDistributionModel.setMouseoverHighlight(false);
-		this.scoreDistributionModel.setShowDatatip(false);
+		
 		this.scoreDistributionModelPointLabels = "['" + results.get(0).getOriginalIdentifier() + "'";
-		series1.set(1, results.get(0).getScore());
-		for(int k = 0; k < this.showScoreGraphs.length; k++) 
-			scores[k].set(1, results.get(0).getRoot().getSingleScore(this.showScoreGraphs[k]));
-		for(int i = 1; i < results.size(); i++) {
-			series1.set((i + 1), results.get(i).getScore());
-			this.scoreDistributionModelPointLabels += ",'" + results.get(i).getOriginalIdentifier() + "'";
-			for(int k = 0; k < this.showScoreGraphs.length; k++) 
-				scores[k].set((i + 1), results.get(i).getRoot().getSingleScore(this.showScoreGraphs[k]));
-		}
-		this.scoreDistributionModel.addSeries(series1);
+		
+		// Add data points
+		List<Object> mainData = new java.util.ArrayList<>();
+		List<List<Object>> scoreData = new java.util.ArrayList<>();
 		for(int k = 0; k < this.showScoreGraphs.length; k++) {
-			this.scoreDistributionModel.addSeries(scores[k]);
+			scoreData.add(new java.util.ArrayList<>());
 		}
+		
+		List<Object> labels = new java.util.ArrayList<>();
+		for(int i = 0; i < results.size(); i++) {
+			labels.add(String.valueOf(i + 1));
+			mainData.add(results.get(i).getScore());
+			if(i > 0) this.scoreDistributionModelPointLabels += ",";
+			this.scoreDistributionModelPointLabels += "'" + results.get(i).getOriginalIdentifier() + "'";
+			for(int k = 0; k < this.showScoreGraphs.length; k++) {
+				scoreData.get(k).add(results.get(i).getRoot().getSingleScore(this.showScoreGraphs[k]));
+			}
+		}
+		
+		mainDataSet.setData(mainData);
+		data.addChartDataSet(mainDataSet);
+		
+		for(int k = 0; k < this.showScoreGraphs.length; k++) {
+			scoreDataSets[k].setData(scoreData.get(k));
+			data.addChartDataSet(scoreDataSets[k]);
+		}
+		
+		data.setLabels(labels);
+		this.scoreDistributionModel.setData(data);
+		
+		// Configure options
+		LineChartOptions options = new LineChartOptions();
+		options.setMaintainAspectRatio(false);
+		
+		org.primefaces.model.charts.optionconfig.legend.Legend legend = new org.primefaces.model.charts.optionconfig.legend.Legend();
+		legend.setDisplay(true);
+		legend.setPosition("top");
+		options.setLegend(legend);
+		
+		CartesianScales cScales = new CartesianScales();
+		CartesianLinearAxes xAxis = new CartesianLinearAxes();
+		CartesianLinearTicks xTicks = new CartesianLinearTicks();
+		xAxis.setTicks(xTicks);
+		cScales.addXAxesData(xAxis);
+		
+		CartesianLinearAxes yAxis = new CartesianLinearAxes();
+		cScales.addYAxesData(yAxis);
+		options.setScales(cScales);
+		
+		this.scoreDistributionModel.setOptions(options);
+		this.scoreDistributionModel.setExtender("extenderScore");
+		
 		this.scoreDistributionModelPointLabels += "]";
 		this.legendLabels += "]";
 	}

@@ -11,7 +11,8 @@
 		xmlns:h="http://xmlns.jcp.org/jsf/html"
 		xmlns:f="http://xmlns.jcp.org/jsf/core"
 		xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-		xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui">
+		xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui"
+		xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 		<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
 		<script type="text/javascript"
 			src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
@@ -38,15 +39,13 @@
 							value="#{compareSpectraD3JSBean.peakList1}" required="true"
 							style="resize: none" id="peakListInput1">
 						</p:inputTextarea>
-						<p:inputText cols="20" value="#{compareSpectraD3JSBean.smiles1}" id="smilesInput1" />
-						<p:watermark for="smilesInput1" value="SMILES" id="smilesWatermark1" />
+						<p:inputText cols="20" value="#{compareSpectraD3JSBean.smiles1}" id="smilesInput1" pt:placeholder="SMILES" />
 						<h3 style="margin-top: 30px">Peaklist 2</h3>
 						<p:inputTextarea rows="10" cols="20" autoResize="false"
 							value="#{compareSpectraD3JSBean.peakList2}" required="true"
 							style="resize: none" id="peakListInput2">
 						</p:inputTextarea>
-						<p:inputText cols="20" value="#{compareSpectraD3JSBean.smiles2}" id="smilesInput2" />
-						<p:watermark for="smilesInput2" value="SMILES" id="smilesWatermark2" />
+						<p:inputText cols="20" value="#{compareSpectraD3JSBean.smiles2}" id="smilesInput2" pt:placeholder="SMILES" />
 					</h:panelGrid>
 					<h:panelGrid id="spectraViewPanel" columns="1">
 						<p id="attributestext" style="position:absolute; margin-left:300px; pointer-events: none;"></p>
