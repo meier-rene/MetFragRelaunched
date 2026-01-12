@@ -1545,7 +1545,7 @@ public class BeanSettingsContainer {
 				dataSet.setBorderWidth(2);
 				
 				List<Object> dataValues = new java.util.ArrayList<>();
-				dataValues.add(java.util.Map.of("x", peak.getMass() + 0.0000001, "y", -10000000.0));
+				dataValues.add(java.util.Map.of("x", peak.getMass(), "y", 0.0));
 				dataValues.add(java.util.Map.of("x", peak.getMass(), "y", peak.getRelativeIntensity()));
 				dataSet.setData(dataValues);
 				
